@@ -5,6 +5,9 @@
 //  Created by wififer on 31/12/15.
 //  Copyright © 2015 wififer. All rights reserved.
 //
+// http://www.raywenderlich.com/113772/uisearchcontroller-tutorial
+// https://openlibrary.org/api/books?jscmd=data&format=json&bibkeys=ISBN:978-84-376-0494-7
+// https://openlibrary.org/api/books?jscmd=data&format=json&bibkeys=ISBN:978-84-9928-071-4  COVER
 
 import UIKit
 import CoreData
@@ -13,6 +16,9 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
     var detailViewController: DetailViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
+    let searchController = UISearchController(searchResultsController: nil)
+    var miTitulo = ""
+
 
 
     override func viewDidLoad() {
@@ -22,6 +28,13 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
         let addButton = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "insertNewObject:")
         self.navigationItem.rightBarButtonItem = addButton
+        
+        //searchController.searchResultsUpdater = self
+        searchController.dimsBackgroundDuringPresentation = false
+        definesPresentationContext = true
+        tableView.tableHeaderView = searchController.searchBar
+        searchController.searchBar.delegate = self
+
         if let split = self.splitViewController {
             let controllers = split.viewControllers
             self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
@@ -45,7 +58,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
              
         // If appropriate, configure the new managed object.
         // Normally you should use accessor methods, but using KVC here avoids the need to add a custom class to the template.
-        newManagedObject.setValue(NSDate(), forKey: "timeStamp")
+        //newManagedObject.setValue(NSDate(), forKey: "timeStamp")
+        newManagedObject.valueForKey("titulo")
              
         // Save the context.
         do {
@@ -186,6 +200,120 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     func controllerDidChangeContent(controller: NSFetchedResultsController) {
         self.tableView.endUpdates()
     }
+    
+    func buscar(cadena: String) {
+        print("Entro en buscar")
+        let urlBase = "https://openlibrary.org/api/books?jscmd=data&format=json&bibkeys=ISBN:"
+
+        
+        var isbn = cadena
+        let url:NSURL = NSURL(string: urlBase+isbn)!
+        let session = NSURLSession.sharedSession()
+        if Reachability.isConnectedToNetwork() {
+            UIApplication.sharedApplication().networkActivityIndicatorVisible = true
+            
+            let task = session.downloadTaskWithURL(url) {
+                (
+                let location, let response, let error) in
+                
+                guard let _:NSURL = location, let _:NSURLResponse = response  where error == nil else {
+                    print("error")
+                    return
+                    
+                }
+                
+                if   let data = NSData(contentsOfURL: location!) {
+                    
+                    do {
+                        let json = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableLeaves)
+                        
+                        print("json.count: ",json.count)
+                        
+                        if (json.count != 0) {
+                            
+                            UIApplication.sharedApplication().networkActivityIndicatorVisible = true
+                            
+                            var  autorTxt = ""
+                            let dico1 = json as! NSDictionary
+                            isbn = "ISBN:"+isbn
+                            let dico2 = dico1[isbn] as! NSDictionary
+                            print("dico2: ",dico2)
+                            let title = dico2["title"] as! NSString as String
+                            let context = self.fetchedResultsController.managedObjectContext
+                            let entity = self.fetchedResultsController.fetchRequest.entity!
+                            let newManagedObject = NSEntityDescription.insertNewObjectForEntityForName(entity.name!, inManagedObjectContext: context)
+                            
+                            // If appropriate, configure the new managed object.
+                            // Normally you should use accessor methods, but using KVC here avoids the need to add a custom class to the template.
+                            //newManagedObject.setValue(NSDate(), forKey: "timeStamp")
+                            newManagedObject.setValue(title, forKey: "titulo")
+
+                            
+                            print("title: ",title)
+                            let autores = dico2["authors"] as! NSArray
+                            print("autores: ",autores)
+                            for name in autores {
+                                
+                                if let miAutor = name["name"] {
+                                    print("miAutor: ",miAutor!)
+                                    autorTxt += "\(miAutor!) \n"
+                                    
+                                }
+                                
+                            }
+                            
+                            if let p = dico2["cover"] {
+                                let portadas = p as! NSDictionary
+                                let urlPortada = portadas["large"] as! NSString as String
+                                print("portada: ",urlPortada)
+                                //self.descargarImgPrincipal(urlPortada)
+                                
+                            }
+                            
+                            
+                            dispatch_async(dispatch_get_main_queue(), {
+                                //  let texto = NSString(data: data, encoding: NSUTF8StringEncoding)
+                               // self.titulo.text = title
+                               // self.autor.text = autorTxt
+                               // self.searchBar.endEditing(true)
+                                UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+                                
+                            })
+                        }else{
+                            dispatch_async(dispatch_get_main_queue(), {
+                                UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+                                print("Ningún resultado")
+                              //  self.searchBar.endEditing(true)
+                                
+                                let alertController = UIAlertController(title: "Atención!", message:
+                                    "No hay ningún libro con ese ISBN", preferredStyle: UIAlertControllerStyle.Alert)
+                                alertController.addAction(UIAlertAction(title: "Aceptar", style: UIAlertActionStyle.Default,handler: nil))
+                                
+                                self.presentViewController(alertController, animated: true, completion: nil)
+                            })
+                        }
+                        
+                        
+                    }catch _{
+                        
+                    }
+                    
+                }
+            }
+            task.resume()
+        }else {
+            print("Internet connection not available")
+            let alertController = UIAlertController(title: "Atención!", message:
+                "No hay conexión a internet", preferredStyle: UIAlertControllerStyle.Alert)
+            alertController.addAction(UIAlertAction(title: "Aceptar", style: UIAlertActionStyle.Default,handler: nil))
+            
+            self.presentViewController(alertController, animated: true, completion: nil)
+        }
+        
+        
+    }
+    
+    
 
     /*
      // Implementing the above methods to update the table view in response to individual changes may have performance implications if a large number of changes are made simultaneously. If this proves to be an issue, you can instead just implement controllerDidChangeContent: which notifies the delegate that all section and object changes have been processed.
@@ -196,5 +324,13 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
      }
      */
 
+}
+
+extension MasterViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(searchBar: UISearchBar) {
+        print("searchBarSearchButtonClicked")
+        buscar(searchBar.text!)
+    }
 }
 
