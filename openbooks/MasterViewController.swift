@@ -18,7 +18,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     var managedObjectContext: NSManagedObjectContext? = nil
     let searchController = UISearchController(searchResultsController: nil)
     var miTitulo = ""
-
+    var books = [BookRecord]()
 
 
     override func viewDidLoad() {
@@ -52,25 +52,10 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
 
     func insertNewObject(sender: AnyObject) {
-        let context = self.fetchedResultsController.managedObjectContext
-        let entity = self.fetchedResultsController.fetchRequest.entity!
-        let newManagedObject = NSEntityDescription.insertNewObjectForEntityForName(entity.name!, inManagedObjectContext: context)
-             
-        // If appropriate, configure the new managed object.
-        // Normally you should use accessor methods, but using KVC here avoids the need to add a custom class to the template.
-        //newManagedObject.setValue(NSDate(), forKey: "timeStamp")
-        newManagedObject.valueForKey("titulo")
-             
-        // Save the context.
-        do {
-            try context.save()
-        } catch {
-            // Replace this implementation with code to handle the error appropriately.
-            // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-            //print("Unresolved error \(error), \(error.userInfo)")
-            abort()
-        }
-    }
+        dispatch_async(dispatch_get_main_queue(), {
+            self.tableView.reloadData()
+            return
+        })    }
 
     // MARK: - Segues
 
@@ -89,12 +74,11 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     // MARK: - Table View
 
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return self.fetchedResultsController.sections?.count ?? 0
+        return 1
     }
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let sectionInfo = self.fetchedResultsController.sections![section]
-        return sectionInfo.numberOfObjects
+        return books.count
     }
 
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -125,8 +109,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
 
     func configureCell(cell: UITableViewCell, atIndexPath indexPath: NSIndexPath) {
-        let object = self.fetchedResultsController.objectAtIndexPath(indexPath)
-        cell.textLabel!.text = object.valueForKey("timeStamp")!.description
+        let bookDetails = books[indexPath.row]
+        cell.textLabel?.text = bookDetails.title
     }
 
     // MARK: - Fetched results controller
@@ -239,14 +223,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                             let dico2 = dico1[isbn] as! NSDictionary
                             print("dico2: ",dico2)
                             let title = dico2["title"] as! NSString as String
-                            let context = self.fetchedResultsController.managedObjectContext
-                            let entity = self.fetchedResultsController.fetchRequest.entity!
-                            let newManagedObject = NSEntityDescription.insertNewObjectForEntityForName(entity.name!, inManagedObjectContext: context)
                             
-                            // If appropriate, configure the new managed object.
-                            // Normally you should use accessor methods, but using KVC here avoids the need to add a custom class to the template.
-                            //newManagedObject.setValue(NSDate(), forKey: "timeStamp")
-                            newManagedObject.setValue(title, forKey: "titulo")
 
                             
                             print("title: ",title)
@@ -262,20 +239,28 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                                 
                             }
                             
+                            var urlPortada = ""
                             if let p = dico2["cover"] {
                                 let portadas = p as! NSDictionary
-                                let urlPortada = portadas["large"] as! NSString as String
+                                 urlPortada = portadas["large"] as! NSString as String
                                 print("portada: ",urlPortada)
                                 //self.descargarImgPrincipal(urlPortada)
                                 
                             }
-                            
+                            let record = BookRecord(image:urlPortada,title:title,autores:autores)
+                            self.books.append(record)
+                            print("books: ",self.books[0])
                             
                             dispatch_async(dispatch_get_main_queue(), {
                                 //  let texto = NSString(data: data, encoding: NSUTF8StringEncoding)
                                // self.titulo.text = title
                                // self.autor.text = autorTxt
                                // self.searchBar.endEditing(true)
+                                let alertController = UIAlertController(title: title, message:
+                                    "+ para añadirlo", preferredStyle: UIAlertControllerStyle.Alert)
+                                alertController.addAction(UIAlertAction(title: "Aceptar", style: UIAlertActionStyle.Default,handler: nil))
+                                
+                                self.presentViewController(alertController, animated: true, completion: nil)
                                 UIApplication.sharedApplication().networkActivityIndicatorVisible = false
                                 
                             })
@@ -333,4 +318,17 @@ extension MasterViewController: UISearchBarDelegate {
         buscar(searchBar.text!)
     }
 }
+class BookRecord {
+    
+    var image = ""
+    var autores = []
+    var title = ""
+    init( image:String, title:String, autores:NSArray) {
+        self.image = image
+        self.title = title
+        self.autores = autores
+        
+    }
+}
+
 
