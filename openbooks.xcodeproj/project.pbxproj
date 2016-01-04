@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1BB510EE1C368E9E00A17488 /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BB510ED1C368E9E00A17488 /* Reachability.swift */; };
+		1BAF30A71C3A79DE002EABA5 /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BAF30A61C3A79DE002EABA5 /* Reachability.swift */; };
 		1BC4B27A1C353FC700657929 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BC4B2791C353FC700657929 /* AppDelegate.swift */; };
 		1BC4B27D1C353FC700657929 /* openbooks.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 1BC4B27B1C353FC700657929 /* openbooks.xcdatamodeld */; };
 		1BC4B27F1C353FC700657929 /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BC4B27E1C353FC700657929 /* MasterViewController.swift */; };
@@ -37,7 +37,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		1BB510ED1C368E9E00A17488 /* Reachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Reachability.swift; path = ../../BuscaLibros/BuscaLibros/Reachability.swift; sourceTree = "<group>"; };
+		1BAF30A61C3A79DE002EABA5 /* Reachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
 		1BC4B2761C353FC700657929 /* openbooks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = openbooks.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1BC4B2791C353FC700657929 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		1BC4B27C1C353FC700657929 /* openbooks.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = openbooks.xcdatamodel; sourceTree = "<group>"; };
@@ -83,6 +83,7 @@
 		1BC4B26D1C353FC700657929 = {
 			isa = PBXGroup;
 			children = (
+				1BAF30A61C3A79DE002EABA5 /* Reachability.swift */,
 				1BC4B2781C353FC700657929 /* openbooks */,
 				1BC4B2921C353FC800657929 /* openbooksTests */,
 				1BC4B29D1C353FC800657929 /* openbooksUITests */,
@@ -105,7 +106,6 @@
 			children = (
 				1BC4B2791C353FC700657929 /* AppDelegate.swift */,
 				1BC4B27E1C353FC700657929 /* MasterViewController.swift */,
-				1BB510ED1C368E9E00A17488 /* Reachability.swift */,
 				1BC4B2801C353FC700657929 /* DetailViewController.swift */,
 				1BC4B2821C353FC700657929 /* Main.storyboard */,
 				1BC4B2851C353FC800657929 /* Assets.xcassets */,
@@ -268,7 +268,7 @@
 				1BC4B27D1C353FC700657929 /* openbooks.xcdatamodeld in Sources */,
 				1BC4B27A1C353FC700657929 /* AppDelegate.swift in Sources */,
 				1BC4B27F1C353FC700657929 /* MasterViewController.swift in Sources */,
-				1BB510EE1C368E9E00A17488 /* Reachability.swift in Sources */,
+				1BAF30A71C3A79DE002EABA5 /* Reachability.swift in Sources */,
 				1BC4B2811C353FC700657929 /* DetailViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
