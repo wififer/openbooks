@@ -62,11 +62,12 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "showDetail" {
             if let indexPath = self.tableView.indexPathForSelectedRow {
-            let object = self.fetchedResultsController.objectAtIndexPath(indexPath)
+            _ = self.fetchedResultsController.objectAtIndexPath(indexPath)
                 let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
-                controller.detailItem = object
+                controller.detailItem = books[indexPath.row]
                 controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
                 controller.navigationItem.leftItemsSupplementBackButton = true
+                controller.toPassBook = books[indexPath.row]
             }
         }
     }
@@ -249,8 +250,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                             }
                             let record = BookRecord(image:urlPortada,title:title,autores:autores)
                             self.books.append(record)
-                            print("books: ",self.books[0])
-                            
+                                                        
                             dispatch_async(dispatch_get_main_queue(), {
                                 //  let texto = NSString(data: data, encoding: NSUTF8StringEncoding)
                                // self.titulo.text = title
