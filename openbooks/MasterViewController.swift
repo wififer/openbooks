@@ -16,7 +16,6 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
     var detailViewController: DetailViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
-    let searchController = UISearchController(searchResultsController: nil)
     var miTitulo = ""
     var books = [BookRecord]()
 
@@ -30,10 +29,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         self.navigationItem.rightBarButtonItem = addButton
         
         //searchController.searchResultsUpdater = self
-        searchController.dimsBackgroundDuringPresentation = false
         definesPresentationContext = true
-        tableView.tableHeaderView = searchController.searchBar
-        searchController.searchBar.delegate = self
 
         if let split = self.splitViewController {
             let controllers = split.viewControllers
@@ -42,8 +38,21 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
 
     override func viewWillAppear(animated: Bool) {
+        print("viewWillAppear Master")
         self.clearsSelectionOnViewWillAppear = self.splitViewController!.collapsed
         super.viewWillAppear(animated)
+        if (mainInstance.title != "") {
+            let bookDetails = BookRecord(image:mainInstance.image,title:mainInstance.title,autores:mainInstance.autores)
+            books.append(bookDetails)
+            print("mainInstance.title",mainInstance.title)
+            mainInstance.title = ""
+            mainInstance.autores = []
+            mainInstance.image = ""
+            tableView.reloadData()
+        }
+        
+        
+       
     }
 
     override func didReceiveMemoryWarning() {
@@ -52,24 +61,26 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
 
     func insertNewObject(sender: AnyObject) {
-        dispatch_async(dispatch_get_main_queue(), {
-            self.tableView.reloadData()
-            return
-        })    }
+        self.performSegueWithIdentifier("lanzaBusqueda", sender:self)
+    }
 
     // MARK: - Segues
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "showDetail" {
+            print("prepareForSegue")
             if let indexPath = self.tableView.indexPathForSelectedRow {
-            _ = self.fetchedResultsController.objectAtIndexPath(indexPath)
+                print("if let indexPath")
+
+         let  object = books[indexPath.row]
                 let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
-                controller.detailItem = books[indexPath.row]
+                controller.detailItem = object
                 controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
                 controller.navigationItem.leftItemsSupplementBackButton = true
-                controller.toPassBook = books[indexPath.row]
+                controller.toPassBook = object
             }
         }
+        
     }
 
     // MARK: - Table View
@@ -79,6 +90,9 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
+        print("books.count",books.count)
+
         return books.count
     }
 
@@ -110,6 +124,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
 
     func configureCell(cell: UITableViewCell, atIndexPath indexPath: NSIndexPath) {
+        
         let bookDetails = books[indexPath.row]
         cell.textLabel?.text = bookDetails.title
     }
@@ -186,117 +201,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         self.tableView.endUpdates()
     }
     
-    func buscar(cadena: String) {
-        print("Entro en buscar")
-        let urlBase = "https://openlibrary.org/api/books?jscmd=data&format=json&bibkeys=ISBN:"
 
-        
-        var isbn = cadena
-        let url:NSURL = NSURL(string: urlBase+isbn)!
-        let session = NSURLSession.sharedSession()
-        if Reachability.isConnectedToNetwork() {
-            UIApplication.sharedApplication().networkActivityIndicatorVisible = true
-            
-            let task = session.downloadTaskWithURL(url) {
-                (
-                let location, let response, let error) in
-                
-                guard let _:NSURL = location, let _:NSURLResponse = response  where error == nil else {
-                    print("error")
-                    return
-                    
-                }
-                
-                if   let data = NSData(contentsOfURL: location!) {
-                    
-                    do {
-                        let json = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableLeaves)
-                        
-                        print("json.count: ",json.count)
-                        
-                        if (json.count != 0) {
-                            
-                            UIApplication.sharedApplication().networkActivityIndicatorVisible = true
-                            
-                            var  autorTxt = ""
-                            let dico1 = json as! NSDictionary
-                            isbn = "ISBN:"+isbn
-                            let dico2 = dico1[isbn] as! NSDictionary
-                            print("dico2: ",dico2)
-                            let title = dico2["title"] as! NSString as String
-                            
-
-                            
-                            print("title: ",title)
-                            let autores = dico2["authors"] as! NSArray
-                            print("autores: ",autores)
-                            for name in autores {
-                                
-                                if let miAutor = name["name"] {
-                                    print("miAutor: ",miAutor!)
-                                    autorTxt += "\(miAutor!) \n"
-                                    
-                                }
-                                
-                            }
-                            
-                            var urlPortada = ""
-                            if let p = dico2["cover"] {
-                                let portadas = p as! NSDictionary
-                                 urlPortada = portadas["large"] as! NSString as String
-                                print("portada: ",urlPortada)
-                                //self.descargarImgPrincipal(urlPortada)
-                                
-                            }
-                            let record = BookRecord(image:urlPortada,title:title,autores:autores)
-                            self.books.append(record)
-                                                        
-                            dispatch_async(dispatch_get_main_queue(), {
-                                //  let texto = NSString(data: data, encoding: NSUTF8StringEncoding)
-                               // self.titulo.text = title
-                               // self.autor.text = autorTxt
-                               // self.searchBar.endEditing(true)
-                                let alertController = UIAlertController(title: title, message:
-                                    "+ para añadirlo", preferredStyle: UIAlertControllerStyle.Alert)
-                                alertController.addAction(UIAlertAction(title: "Aceptar", style: UIAlertActionStyle.Default,handler: nil))
-                                
-                                self.presentViewController(alertController, animated: true, completion: nil)
-                                UIApplication.sharedApplication().networkActivityIndicatorVisible = false
-                                
-                            })
-                        }else{
-                            dispatch_async(dispatch_get_main_queue(), {
-                                UIApplication.sharedApplication().networkActivityIndicatorVisible = false
-                                print("Ningún resultado")
-                              //  self.searchBar.endEditing(true)
-                                
-                                let alertController = UIAlertController(title: "Atención!", message:
-                                    "No hay ningún libro con ese ISBN", preferredStyle: UIAlertControllerStyle.Alert)
-                                alertController.addAction(UIAlertAction(title: "Aceptar", style: UIAlertActionStyle.Default,handler: nil))
-                                
-                                self.presentViewController(alertController, animated: true, completion: nil)
-                            })
-                        }
-                        
-                        
-                    }catch _{
-                        
-                    }
-                    
-                }
-            }
-            task.resume()
-        }else {
-            print("Internet connection not available")
-            let alertController = UIAlertController(title: "Atención!", message:
-                "No hay conexión a internet", preferredStyle: UIAlertControllerStyle.Alert)
-            alertController.addAction(UIAlertAction(title: "Aceptar", style: UIAlertActionStyle.Default,handler: nil))
-            
-            self.presentViewController(alertController, animated: true, completion: nil)
-        }
-        
-        
-    }
     
     
 
@@ -311,13 +216,6 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
 }
 
-extension MasterViewController: UISearchBarDelegate {
-    
-    func searchBarSearchButtonClicked(searchBar: UISearchBar) {
-        print("searchBarSearchButtonClicked")
-        buscar(searchBar.text!)
-    }
-}
 class BookRecord {
     
     var image = ""

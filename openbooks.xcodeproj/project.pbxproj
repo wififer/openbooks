@@ -17,6 +17,7 @@
 		1BC4B2891C353FC800657929 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1BC4B2871C353FC800657929 /* LaunchScreen.storyboard */; };
 		1BC4B2941C353FC800657929 /* openbooksTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BC4B2931C353FC800657929 /* openbooksTests.swift */; };
 		1BC4B29F1C353FC800657929 /* openbooksUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BC4B29E1C353FC800657929 /* openbooksUITests.swift */; };
+		F23DF2671C3E86030016D416 /* global.swift in Sources */ = {isa = PBXBuildFile; fileRef = F23DF2661C3E86030016D416 /* global.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +54,7 @@
 		1BC4B29A1C353FC800657929 /* openbooksUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = openbooksUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1BC4B29E1C353FC800657929 /* openbooksUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = openbooksUITests.swift; sourceTree = "<group>"; };
 		1BC4B2A01C353FC800657929 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F23DF2661C3E86030016D416 /* global.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = global.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,6 +114,7 @@
 				1BC4B2871C353FC800657929 /* LaunchScreen.storyboard */,
 				1BC4B28A1C353FC800657929 /* Info.plist */,
 				1BC4B27B1C353FC700657929 /* openbooks.xcdatamodeld */,
+				F23DF2661C3E86030016D416 /* global.swift */,
 			);
 			path = openbooks;
 			sourceTree = "<group>";
@@ -265,6 +268,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F23DF2671C3E86030016D416 /* global.swift in Sources */,
 				1BC4B27D1C353FC700657929 /* openbooks.xcdatamodeld in Sources */,
 				1BC4B27A1C353FC700657929 /* AppDelegate.swift in Sources */,
 				1BC4B27F1C353FC700657929 /* MasterViewController.swift in Sources */,
