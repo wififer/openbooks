@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreData
 
 class DetailViewController: UIViewController,UISearchBarDelegate {
     
@@ -26,7 +27,7 @@ class DetailViewController: UIViewController,UISearchBarDelegate {
     
     var toPassBook = BookRecord(image: "", title: "", autores: [])
     
-
+var libros = [NSManagedObject]()
 
 
     var detailItem: AnyObject? {
@@ -57,7 +58,7 @@ class DetailViewController: UIViewController,UISearchBarDelegate {
                 
             }
             if (toPassBook.image != ""){
-                descargarImgPrincipal(toPassBook.image)
+                descargarImgPrincipal(toPassBook.image,titulo:toPassBook.title,autores: autorTxt,isbn:"")
             }
             
         }
@@ -77,7 +78,7 @@ class DetailViewController: UIViewController,UISearchBarDelegate {
         // Dispose of any resources that can be recreated.
     }
     
-    func descargarImgPrincipal(url:String) {
+    func descargarImgPrincipal(url:String,titulo:String,autores:String,isbn:String) {
         
         dispatch_async(dispatch_get_main_queue(), {
             self.imgIndicator.startAnimating()
@@ -109,7 +110,7 @@ class DetailViewController: UIViewController,UISearchBarDelegate {
                         print("Pongo imagen:  \(image)")
                         self.portada.image = image
                         self.imgIndicator.stopAnimating()
-                        
+                        self.saveData(isbn, titulo: titulo, autores: autores, imagen: imageData)
                         return
                     })
                     
@@ -179,7 +180,7 @@ class DetailViewController: UIViewController,UISearchBarDelegate {
                                 let portadas = p as! NSDictionary
                                 urlPortada = portadas["large"] as! NSString as String
                                 print("portada: ",urlPortada)
-                                self.descargarImgPrincipal(urlPortada)
+                                self.descargarImgPrincipal(urlPortada,titulo: title,autores: autorTxt,isbn:isbn!)
                                 
                             }
                             
@@ -235,6 +236,36 @@ class DetailViewController: UIViewController,UISearchBarDelegate {
     func dismissKeyboard() {
         //Causes the view (or one of its embedded text fields) to resign the first responder status.
         self.searchBar.endEditing(true)
+    }
+    
+    func saveData(isbn: String,titulo:String,autores:String,imagen:NSData) {
+        //1
+        let appDelegate =
+        UIApplication.sharedApplication().delegate as! AppDelegate
+        
+        let managedContext = appDelegate.managedObjectContext
+        
+        //2
+        let entity =  NSEntityDescription.entityForName("Libro",
+            inManagedObjectContext:managedContext)
+        
+        let libro = NSManagedObject(entity: entity!,
+            insertIntoManagedObjectContext: managedContext)
+        
+        //3
+        libro.setValue(isbn, forKey: "isbn")
+        libro.setValue(titulo, forKey: "titulo")
+        libro.setValue(autores, forKey: "autores")
+        libro.setValue(imagen, forKey: "imagen")
+        
+        //4
+        do {
+            try managedContext.save()
+            //5
+            libros.append(libro)
+        } catch let error as NSError  {
+            print("Could not save \(error), \(error.userInfo)")
+        }
     }
 
 
