@@ -27,6 +27,14 @@ class DetailViewController: UIViewController,UISearchBarDelegate {
     
     var toPassBook = BookRecord(image: "", title: "", autores: [])
     
+    var toPassTitulo:String = ""
+    var toPassIsbn:String = ""
+    var toPassAutores:String = ""
+    var toPassImagen:NSData = NSData()
+
+
+
+    
 var libros = [NSManagedObject]()
 
 
@@ -41,24 +49,24 @@ var libros = [NSManagedObject]()
         // Update the user interface for the detail item.
         if let _ = self.detailItem {
             if let tituloTv = self.titulo {
-                tituloTv.text = toPassBook.title
+                tituloTv.text = toPassTitulo
             }
-            
-         var   autorTxt = ""
-            for name in toPassBook.autores {
-                
-                if let miAutor = name["name"] {
-                    print("miAutor: ",miAutor!)
-                    autorTxt += "\(miAutor!) \n"
+            if let autorTv = self.autor {
+                autorTv.text = toPassAutores
+            }
+            if (toPassImagen != ""){
+                guard let image = UIImage(data: toPassImagen) else {
+                    // throw an error, return from your function, whatever
                     
-                }
-                if let autorTv = self.autor {
-                    autorTv.text = autorTxt
+                    return
                 }
                 
-            }
-            if (toPassBook.image != ""){
-                descargarImgPrincipal(toPassBook.image,titulo:toPassBook.title,autores: autorTxt,isbn:"")
+                dispatch_async(dispatch_get_main_queue(), {
+                    print("Pongo imagen sin descargar:  \(image)")
+                    self.portada.image = image
+                    
+                    return
+                })
             }
             
         }
@@ -180,13 +188,15 @@ var libros = [NSManagedObject]()
                                 let portadas = p as! NSDictionary
                                 urlPortada = portadas["large"] as! NSString as String
                                 print("portada: ",urlPortada)
-                                self.descargarImgPrincipal(urlPortada,titulo: title,autores: autorTxt,isbn:isbn!)
+                                self.descargarImgPrincipal(urlPortada,titulo: title,autores: autorTxt,isbn:searchBar.text!)
                                 
+                            }else{
+                                self.saveData(searchBar.text!, titulo: title, autores: autorTxt, imagen: NSData())
                             }
                             
-                            mainInstance.title = title
-                            mainInstance.autores = autores
-                            mainInstance.image = urlPortada
+//                            mainInstance.title = title
+//                            mainInstance.autores = autores
+//                            mainInstance.image = urlPortada
                            
                             //self.Globales.append(record)
                             

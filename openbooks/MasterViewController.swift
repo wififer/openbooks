@@ -16,8 +16,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
     var detailViewController: DetailViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
-    var miTitulo = ""
-    var books = [BookRecord]()
+    var libros = [NSManagedObject]()
 
 
     override func viewDidLoad() {
@@ -41,18 +40,35 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         print("viewWillAppear Master")
         self.clearsSelectionOnViewWillAppear = self.splitViewController!.collapsed
         super.viewWillAppear(animated)
-        if (mainInstance.title != "") {
-            let bookDetails = BookRecord(image:mainInstance.image,title:mainInstance.title,autores:mainInstance.autores)
-            books.append(bookDetails)
-            print("mainInstance.title",mainInstance.title)
-            mainInstance.title = ""
-            mainInstance.autores = []
-            mainInstance.image = ""
-            tableView.reloadData()
-        }
-        
-        
        
+        
+//        if (mainInstance.title != "") {
+//            let bookDetails = BookRecord(image:mainInstance.image,title:mainInstance.title,autores:mainInstance.autores)
+//            books.append(bookDetails)
+//            print("mainInstance.title",mainInstance.title)
+//            mainInstance.title = ""
+//            mainInstance.autores = []
+//            mainInstance.image = ""
+//            tableView.reloadData()
+//        }
+        
+        let appDelegate =
+        UIApplication.sharedApplication().delegate as! AppDelegate
+        
+        let managedContext = appDelegate.managedObjectContext
+        
+        //2
+        let fetchRequest = NSFetchRequest(entityName: "Libro")
+        
+        //3
+        do {
+            let results =
+            try managedContext.executeFetchRequest(fetchRequest)
+            libros = results as! [NSManagedObject]
+        } catch let error as NSError {
+            print("Could not fetch \(error), \(error.userInfo)")
+        }
+       tableView.reloadData()
     }
 
     override func didReceiveMemoryWarning() {
@@ -72,12 +88,35 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             if let indexPath = self.tableView.indexPathForSelectedRow {
                 print("if let indexPath")
 
-         let  object = books[indexPath.row]
+         let  libro = libros[indexPath.row]
+                print("libro",libro)
+
                 let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
-                controller.detailItem = object
+                controller.detailItem = libro
                 controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
                 controller.navigationItem.leftItemsSupplementBackButton = true
-                controller.toPassBook = object
+                let titulo =  libro.valueForKey("titulo") as? String
+                let isbn =  libro.valueForKey("isbn") as? String
+                let autores =  libro.valueForKey("autores") as? String
+                let imagen =  libro.valueForKey("imagen") as? NSData
+                print("titulo",titulo!)
+
+                if let miTitulo = titulo {
+                    controller.toPassTitulo = miTitulo
+                }
+                
+                if let misAutores = autores {
+                    controller.toPassAutores = misAutores
+                }
+                
+                if let miIsbn = isbn {
+                    controller.toPassIsbn = miIsbn
+                }
+                if let miImagen = imagen {
+                    controller.toPassImagen = miImagen
+
+                }
+                
             }
         }
         
@@ -91,15 +130,23 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        print("books.count",books.count)
+        print("libros.count",libros.count)
 
-        return books.count
+        return libros.count
     }
 
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
-        self.configureCell(cell, atIndexPath: indexPath)
-        return cell
+        
+        
+        let cell =
+        tableView.dequeueReusableCellWithIdentifier("Cell")
+        
+//        let libro = libros[indexPath.row]
+//        
+//        cell!.textLabel!.text =
+//            libro.valueForKey("titulo") as? String
+        configureCell(cell!, atIndexPath: indexPath)
+        return cell!
     }
 
     override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
@@ -125,8 +172,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
     func configureCell(cell: UITableViewCell, atIndexPath indexPath: NSIndexPath) {
         
-        let bookDetails = books[indexPath.row]
-        cell.textLabel?.text = bookDetails.title
+        let bookDetails = libros[indexPath.row]
+        cell.textLabel?.text = bookDetails.valueForKey("titulo") as? String
     }
 
     // MARK: - Fetched results controller

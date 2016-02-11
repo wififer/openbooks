@@ -5,6 +5,7 @@
 //  Created by subdireccion.archivos.spain@gmail.com on 7/1/16.
 //  Copyright © 2016 wififer. All rights reserved.
 //
+// Esta clase no se usa en este proyecto, la dejo por si lo necesito
 
 import Foundation
 
